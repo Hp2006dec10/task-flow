@@ -77,9 +77,11 @@ export default function DashboardClient({ user, initialLists }: DashboardClientP
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   // Enforce Light Mode on Mount
   useEffect(() => {
+    setMounted(true);
     document.documentElement.classList.remove('dark');
   }, []);
 
@@ -212,7 +214,7 @@ export default function DashboardClient({ user, initialLists }: DashboardClientP
     const payload = {
       name: modalTaskName.trim(),
       description: modalTaskDesc.trim() || null,
-      dueDate: modalTaskDueDate || null,
+      dueDate: modalTaskDueDate ? new Date(modalTaskDueDate).toISOString() : null,
       priority: modalTaskPriority,
       status: modalTaskStatus,
       listId: activeListId,
@@ -402,24 +404,28 @@ export default function DashboardClient({ user, initialLists }: DashboardClientP
 
     // 4. Sort
     result.sort((a, b) => {
-      let valA: any = a[sortBy as keyof Task];
-      let valB: any = b[sortBy as keyof Task];
-
       if (sortBy === 'dueDate') {
         const dateA = a.dueDate ? new Date(a.dueDate).getTime() : (sortOrder === 'asc' ? Infinity : -Infinity);
         const dateB = b.dueDate ? new Date(b.dueDate).getTime() : (sortOrder === 'asc' ? Infinity : -Infinity);
         return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
       }
 
+      if (sortBy === 'createdAt') {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      let valA: any = a[sortBy as keyof Task];
+      let valB: any = b[sortBy as keyof Task];
+
       if (sortBy === 'priority') {
         const priorityWeight = { high: 3, medium: 2, low: 1 };
         valA = priorityWeight[a.priority as 'low' | 'medium' | 'high'] || 0;
         valB = priorityWeight[b.priority as 'low' | 'medium' | 'high'] || 0;
-      }
-
-      if (typeof valA === 'string') {
-        valA = valA.toLowerCase();
-        valB = (valB || '').toLowerCase();
+      } else {
+        valA = String(valA || '').toLowerCase();
+        valB = String(valB || '').toLowerCase();
       }
 
       if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
@@ -442,7 +448,7 @@ export default function DashboardClient({ user, initialLists }: DashboardClientP
   }, [activeList]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 flex flex-col md:flex-row antialiased transition-colors duration-300">
+    <div className="min-h-[100dvh] bg-zinc-50 dark:bg-zinc-950 font-sans text-zinc-900 dark:text-zinc-100 flex flex-col md:flex-row antialiased transition-colors duration-300">
       {/* Sidebar - Collapsible on Mobile */}
       <aside className={`
         ${sidebarOpen ? 'flex' : 'hidden md:flex'}
@@ -882,7 +888,7 @@ export default function DashboardClient({ user, initialLists }: DashboardClientP
                           )}
 
                           {/* Due Date Indicator */}
-                          {dueDateInfo && (
+                          {mounted && dueDateInfo && (
                             <div className="flex items-center gap-3">
                               <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-medium shrink-0 ${dueDateInfo.colorClass}`}>
                                 <Calendar className="h-3 w-3" />

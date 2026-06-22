@@ -11,7 +11,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-zinc-50 text-zinc-900 antialiased overflow-hidden">
+    <div className="relative flex min-h-[100dvh] flex-col bg-zinc-50 text-zinc-900 antialiased overflow-hidden">
       {/* Background glow animations */}
       <div className="absolute top-0 right-1/4 -z-10 h-[500px] w-[500px] rounded-full bg-indigo-600/[0.04] blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 -z-10 h-[500px] w-[500px] rounded-full bg-violet-600/[0.04] blur-[120px] pointer-events-none" />
