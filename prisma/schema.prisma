@@ -14,9 +14,11 @@ model User {
   isVerified Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  lists      List[]
-  tasks      Task[]
-  otps       Otp[]
+  lists          List[]
+  tasks          Task[]
+  otps           Otp[]
+  anniversaries  Anniversary[]
+  emailRemindersEnabled Boolean @default(true)
 }
 
 model Otp {
@@ -30,13 +32,15 @@ model Otp {
 }
 
 model List {
-  id        String   @id @default(uuid())
-  name      String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks     Task[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String        @id @default(uuid())
+  name          String
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks         Task[]
+  anniversaries Anniversary[]
+  type          String        @default("regular")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Task {
@@ -52,4 +56,19 @@ model Task {
   list        List      @relation(fields: [listId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Anniversary {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  date        DateTime
+  isImportant Boolean  @default(true)
+  reminderTime String  @default("8 AM")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listId      String
+  list        List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getSessionUser } from '@/lib/dal';
 import { redirect } from 'next/navigation';
-import { CheckSquare, ArrowRight, ShieldCheck, Mail, Database } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Mail, Database } from 'lucide-react';
 
 export default async function HomePage() {
   // If user has a valid active session, redirect them directly to the dashboard
@@ -20,9 +20,7 @@ export default async function HomePage() {
       <header className="border-b border-zinc-200/80 backdrop-blur-md bg-white/80 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-650/20">
-              <CheckSquare className="h-5 w-5" />
-            </div>
+            <img src="/icon.png" alt="TaskFlow Logo" className="h-9 w-9 rounded-lg object-cover shadow-md shadow-indigo-600/10" />
             <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-zinc-950 to-zinc-800 bg-clip-text text-transparent">
               TaskFlow
             </span>

@@ -40,6 +40,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
+    if (list.type === 'anniversary') {
+      return NextResponse.json({ message: 'Cannot rename the system special dates list' }, { status: 400 });
+    }
+
     const updatedList = await prisma.list.update({
       where: { id },
       data: {
@@ -76,6 +80,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     if (list.userId !== session.userId) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    if (list.type === 'anniversary') {
+      return NextResponse.json({ message: 'Cannot delete the system special dates list' }, { status: 400 });
     }
 
     await prisma.list.delete({

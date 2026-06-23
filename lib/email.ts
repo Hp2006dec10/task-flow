@@ -103,3 +103,59 @@ export async function sendForgotPasswordEmail(email: string, name: string, otp: 
     return { success: true, fallback: true };
   }
 }
+
+export async function sendAnniversaryReminderEmail(
+  email: string,
+  userName: string,
+  anniversaryName: string,
+  anniversaryDesc: string | null,
+  date: Date | string
+) {
+  const transporter = getTransporter();
+  const subject = `Reminder: ${anniversaryName} today!`;
+  
+  const dateObj = new Date(date);
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const formattedDate = `${monthNames[dateObj.getUTCMonth()]} ${dateObj.getUTCDate()}`;
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+      <h2 style="color: #ec4899; margin-bottom: 16px;">Special Date Reminder! 🔔</h2>
+      <p style="font-size: 16px; color: #374151;">Hello ${userName},</p>
+      <p style="font-size: 16px; color: #374151;">This is a reminder that today, <strong>${formattedDate}</strong>, is:</p>
+      <div style="background-color: #fdf2f8; border: 1px solid #fbcfe8; padding: 20px; border-radius: 8px; margin: 24px 0;">
+        <h3 style="color: #db2777; margin: 0 0 8px 0; font-size: 18px;">${anniversaryName}</h3>
+        ${anniversaryDesc ? `<p style="font-size: 14px; color: #4b5563; margin: 0;">${anniversaryDesc}</p>` : ''}
+      </div>
+      <p style="font-size: 14px; color: #6b7280; margin-top: 24px;">You received this email because you enabled reminders for this event in TaskFlow.</p>
+    </div>
+  `;
+
+  if (!transporter) {
+    console.log('\n=========================================');
+    console.log(`[DEV MODE] Anniversary Reminder for ${userName} (${email}):`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Event Name: ${anniversaryName}`);
+    console.log(`Event Date: ${formattedDate}`);
+    console.log('=========================================\n');
+    return { success: true, localDev: true };
+  }
+
+  try {
+    await transporter.sendMail({
+      from: `"TaskFlow" <${smtpFromEmail}>`,
+      to: email,
+      subject,
+      html,
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('SMTP sending error. Falling back to console logging.', error);
+    console.log('\n=========================================');
+    console.log(`[FALLBACK] Anniversary Reminder for ${userName} (${email}):`);
+    console.log(`Event Name: ${anniversaryName}`);
+    console.log('=========================================\n');
+    return { success: true, fallback: true };
+  }
+}
+

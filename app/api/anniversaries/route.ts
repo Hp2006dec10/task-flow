@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { decrypt } from '@/lib/session';
 import { prisma } from '@/lib/db';
-import { TaskSchema } from '@/lib/definitions';
+import { AnniversarySchema } from '@/lib/definitions';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validated = TaskSchema.safeParse(body);
+    const validated = AnniversarySchema.safeParse(body);
 
     if (!validated.success) {
       return NextResponse.json({
@@ -22,9 +22,18 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const { name, description, dueDate, priority, status, listId } = validated.data;
+    const { name, description, date, listId, isImportant, reminderTime } = validated.data;
 
-    // Verify ownership of the list
+    // Fetch user settings to check if they opted out of email reminders entirely
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    }
+
+    // Verify ownership of the list and check if it is an anniversary list
     const list = await prisma.list.findUnique({
       where: { id: listId },
     });
@@ -37,25 +46,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
     }
 
-    if (list.type === 'anniversary') {
-      return NextResponse.json({ message: 'Cannot create tasks in a Special Dates list' }, { status: 400 });
+    if (list.type !== 'anniversary') {
+      return NextResponse.json({ message: 'Cannot add an anniversary to a regular list' }, { status: 400 });
     }
 
-    const task = await prisma.task.create({
+    // If user opted out entirely, default new anniversaries to not important (no reminder)
+    const finalIsImportant = body.isImportant !== undefined ? isImportant : user.emailRemindersEnabled;
+
+    const anniversary = await prisma.anniversary.create({
       data: {
         name,
         description,
-        dueDate,
-        priority,
-        status,
+        date,
+        isImportant: finalIsImportant,
+        reminderTime,
         listId,
         userId: session.userId,
       },
     });
 
-    return NextResponse.json({ success: true, task });
+    return NextResponse.json({ success: true, anniversary });
   } catch (error) {
-    console.error('POST task error:', error);
+    console.error('POST anniversary error:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }

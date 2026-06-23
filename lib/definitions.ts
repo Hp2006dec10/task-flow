@@ -71,3 +71,14 @@ export const TaskSchema = z.object({
 export type CreateListInput = z.infer<typeof ListSchema>;
 export type CreateTaskInput = z.infer<typeof TaskSchema>;
 
+export const AnniversarySchema = z.object({
+  name: z.string().min(1, { message: 'Name is required.' }).max(200).trim(),
+  description: z.string().max(1000).trim().optional().nullable(),
+  date: z.string().transform((val) => new Date(val)),
+  listId: z.string().uuid({ message: 'A valid list ID is required.' }),
+  isImportant: z.boolean().default(true),
+  reminderTime: z.enum(['12 AM', '8 AM']).default('8 AM'),
+});
+
+export type CreateAnniversaryInput = z.infer<typeof AnniversarySchema>;
+

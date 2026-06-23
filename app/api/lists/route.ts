@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
         tasks: {
           orderBy: { createdAt: 'desc' },
         },
+        anniversaries: {
+          orderBy: { date: 'asc' },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -52,9 +55,11 @@ export async function POST(request: NextRequest) {
       data: {
         name: validated.data.name,
         userId: session.userId,
+        type: 'regular',
       },
       include: {
         tasks: true,
+        anniversaries: true,
       },
     });
 

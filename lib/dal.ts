@@ -30,6 +30,7 @@ export const getSessionUser = cache(async () => {
         name: true,
         email: true,
         isVerified: true,
+        emailRemindersEnabled: true,
       },
     });
 
